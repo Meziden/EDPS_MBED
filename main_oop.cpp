@@ -3,7 +3,7 @@
 
 //Overall Timer
 int Clock=0;
-const int FrameDelay = 31;//32Hz Sampleing Rate
+const int FrameDelay = 31;//32Hz Sampling Rate
 
 //Pulse Rate
 int PulseRate=0;
@@ -16,10 +16,11 @@ DigitalIn Button(p10);
 DigitalOut Dec_power(p7);
 
 //Voltage data arrays
-float VolArr[64]        ={0};
+float VolArr[64]       ={0};
 float VolArr_tmp[64]   ={0};
 
-//Pulse Checking Threshold
+//Pulse Checking Threshold (voltage level (from read();) change in 1/16 second)
+//0.05 for 165*16mV/sec
 const float Threshold = 0.05;
 
 int pulse_analyze(const float* VolArr);//Prototype of Pulse Analyze
@@ -35,9 +36,9 @@ int main()
         if( (Clock%4) ==0)
         {
             if(Button)
-                screen.graph(VolArr);
+                screen.graph(VolArr,270);
             else
-                screen.graph(PulseRate);
+                screen.graph(PulseRate,270);
         }
         
         //Voltage Cache refreshing
@@ -58,7 +59,7 @@ int main()
     return 0;
 }
 
-int pulse_analyze(const float* VolArr)//Rising Edge Checking
+int pulse_analyze(const float* VolArr)//Rising Edge Check
 {
     int pulserate=0;
     int start=0,end=0;//Two time stamps.
