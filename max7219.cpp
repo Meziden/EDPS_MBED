@@ -2,9 +2,10 @@
 #include "max7219.h"
 
 //Configration for VOlArr Scanning
-const int ScanStart = 0;
-const int ScanEnd   = 7;
-const int ScanSkip  = 1;
+//Values for 32Hz 
+const int ScanStart = 35;
+const int ScanEnd   = 64;
+const int ScanSkip  = 4;
 
 
 #ifndef NUMBER_FONT
@@ -70,7 +71,7 @@ int max7219::write16(int addr,int data)
     return data;
 }
 
-int max7219::graph(const float* VolArr)
+int max7219::graph(const float* VolArr,int degree)
 {
     int FrameBuffer[8]={0};
     for(int limit=7;limit>=0;limit--)
@@ -82,12 +83,13 @@ int max7219::graph(const float* VolArr)
                 FrameBuffer[limit] |= ( 1 << ((pos-ScanStart)/ScanSkip) );
         }
     }
+    rotate(FrameBuffer,degree);
     for(int i=0;i!=8;i++)
         write16(i+1,FrameBuffer[i]);
     return 0;
 }
 
-int max7219::graph(int number)
+int max7219::graph(int number,int degree)
 {
     if(number > 99)
     {
@@ -99,7 +101,39 @@ int max7219::graph(int number)
         FrameBuffer[i]  = (numcache[number%10][i])<<4;// "<<4" move all numbers to the right half
         FrameBuffer[i] |= (numcache[number/10][i]);
     }
+    rotate(FrameBuffer,degree);
     for(int i=0;i!=8;i++)
         write16(i+1,FrameBuffer[i]);
+    return 0;
+}
+
+int max7219::rotate(int *FrameBuffer,int degree)
+{
+    int FrameBuffer_tmp[8]={0};
+    
+    for(int i=0;i<8;i++)
+        FrameBuffer_tmp[i]=FrameBuffer[i];
+    
+    if(degree == 0)
+        return 1;
+    
+    for(int i=0;i<8;i++)
+    {
+        FrameBUffer[i]=0;
+        for(int j=0;j<8;j++)
+        {
+            switch(degree)
+            {
+                case 90:
+                    FrameBuffer[i] += ( ( FrameBuffer_tmp [j] >> (7-i) ) % 2 ) << j;break;
+                case 180:
+                    FrameBuffer[i] += ( ( FrameBuffer_tmp [7-i] >> j ) % 2 ) << (7-j);break;
+                case 270:
+                    FrameBuffer[i] += ( ( FrameBuffer_tmp [j] >> i ) % 2 ) << (7-j);break;
+                default:
+                break;
+            }
+        }
+    }
     return 0;
 }
