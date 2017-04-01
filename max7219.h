@@ -1,5 +1,3 @@
-//Encapsulation for MAX7219+1088As module.
-//WARNING:BIG BROTHER IS WATCHING YOU.
 #ifndef MAX7219_H
 #define MAX7219_H
 
@@ -10,16 +8,18 @@ class max7219:public SPI
     max7219();
     //Overloaded constructor
     max7219(PinName MOSI,PinName MISO,PinName SCLK,PinName CS);
-    //Init,because there's no completed c++11 support in mbed now.
+    //Init
     int init();
-    //MAX7219 SPI port data writing
+    //MAX7219 SPI PORT
     int write16(int addr,int data);
     //Graph for numbers
-    int graph(int number);
+    int graph(int number,int degree=0);
     //Graph for Voltage Array
-    int graph(const float* VolArr);
+    int graph(const float* VolArr,int degree=0);
     
     private:
+    
+    int rotate(int *FrameBuffer,int degree);
     
     DigitalOut Load;
 };
