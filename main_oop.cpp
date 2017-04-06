@@ -21,7 +21,7 @@ float VolArr_tmp[64]   ={0};
 
 //Pulse Checking Threshold (voltage level (from read();) change in 1/16 second)
 //0.05 for 165*16mV/sec
-const float Threshold = 0.05;
+const float Threshold = 0.03;
 
 int pulse_analyze(const float* VolArr);//Prototype of Pulse Analyze
 
@@ -59,15 +59,17 @@ int main()
     return 0;
 }
 
-int pulse_analyze(const float* VolArr)//Rising Edge Check
+int pulse_analyze(const float* VolArr)  //Another way
 {
-    int pulserate=0;
-    int start=0,end=0;//Two time stamps.
-    while( (VolArr[start+2] - VolArr[start]) < Threshold && start < 51)
+    int start=0,end=0;
+    while( VolArr[start+2] - VolArr[start] > 0 && start < 62 )
+        start++;
+    while( VolArr[start+2] - VolArr[start] < Threshold && start < 51 )
         start++;
     end=start+10;
-    while( (VolArr[end+2] - VolArr[end]) < Threshold && end < 62)
+    while( VolArr[end+2] - VolArr[end] > 0 && end < 62 )
         end++;
-    pulserate=(1920.0/(end-start));
-    return pulserate;
+    while( VolArr[end+2] - VolArr[end] < Threshold && end < 62 )
+        end++;
+    return 1920.0/(end-start);
 }
