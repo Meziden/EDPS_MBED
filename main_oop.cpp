@@ -69,7 +69,7 @@ int main()
 int pulse_analyze(const float* VolArr)  //returns the pulserate.
 {
     int start=0,end=0;
-    while( VolArr[start+2] - VolArr[start] > 0 && start < 62 )
+    while( VolArr[start+2] - VolArr[start] > 0 && start < 51 )
         start++;
     while( VolArr[start+2] - VolArr[start] < Threshold && start < 51 )
         start++;
