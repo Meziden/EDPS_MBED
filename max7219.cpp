@@ -1,10 +1,10 @@
 #include "mbed.h"
 #include "max7219.h"
 
-//Configration for VOlArr Scanning
+//Configration for VolArr Scanning
 //Values for 32Hz 
-const int ScanStart = 35;
-const int ScanEnd   = 64;
+const int ScanStart = 3;
+const int ScanEnd   = 31;
 const int ScanSkip  = 4;
 
 
@@ -76,7 +76,7 @@ int max7219::graph(const float* VolArr,int degree)
     int FrameBuffer[8]={0};
     for(int limit=7;limit>=0;limit--)
     {
-        for(int pos=ScanStart;pos<ScanEnd;pos+=ScanSkip)
+        for(int pos=ScanStart;pos<=ScanEnd;pos+=ScanSkip)
         {
             //samples in last second
             if( VolArr[pos]*8.0 > limit )
