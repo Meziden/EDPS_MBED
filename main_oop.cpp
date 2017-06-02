@@ -80,3 +80,20 @@ int pulse_analyze(const float* VolArr)  //returns the pulserate.
         end++;
     return 1920.0/(end-start);
 }
+
+//Falling Edge Triggered Function,optional
+/*
+int pulse_analyze(const float* VolArr)  //returns the pulserate.
+{
+    int start=0,end=0;
+    while( VolArr[start+2] - VolArr[start] < 0 && start < 51 )
+        start++;
+    while( VolArr[start+2] - VolArr[start] > -Threshold && start < 51 )
+        start++;
+    end=start+10;
+    while( VolArr[end+2] - VolArr[end] < 0 && end < 62 )
+        end++;
+    while( VolArr[end+2] - VolArr[end] > -Threshold && end < 62 )
+        end++;
+    return 1920.0/(end-start);
+}*/
