@@ -23,5 +23,10 @@
 ### xy160d / XY160D 直流电机驱动器
 
 - 封装自PWM，已加入正反转间刹车功能。
-- 包含文件 xy160d.h xy160d.cpp，示例程序为main_xy160d.cpp
+- 包含文件 xy160d.h xy160d.cpp，示例程序为tan90°
+- 需要注意的是：这个类直接继承自PwmOut,调速使用的是
+```c++
+YourObject.write(YourSpeed);
+```
+请勿使用运算符“=”，因该运算符重载不接受继承。 
 
