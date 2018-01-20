@@ -13,14 +13,15 @@
 ### max7219 / MAX7219 8x8点阵LED驱动器
 
 - 封装自SPI接口，支持多路显示。
-
 - 包含文件 max7219.h max7219.cpp，示例程序为main_max7219.cpp
 
-### StepMotor / 两相 步进电机
+### l298n / L298N 两相步进电机驱动器
 
 - 封装自GPIO，支持同时控制多路电机。
-- 包含文件 StepMotor.h StepMotor.cpp，示例程序为main_StepMotor.cpp
+- 包含文件 l298n.h l298n.cpp，示例程序为main_l298n.cpp
 
+### xy160d / XY160D 直流电机驱动器
 
-
+- 封装自PWM，已加入正反转间刹车功能。
+- 包含文件 xy160d.h xy160d.cpp，示例程序为main_xy160d.cpp
 
