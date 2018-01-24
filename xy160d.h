@@ -14,6 +14,8 @@ class xy160d : public PwmOut
         //constructors
         xy160d(PinName pwmpin, PinName ctlpin1, PinName ctlpin2);
         
+        void operator=(const float&);
+        
         void setmode(int mode_tmp);
     
     private:
