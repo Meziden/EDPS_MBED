@@ -1,15 +1,9 @@
 # mbed-libmezi
 
-### Some class libraries for mbed platform / 一些mbed类库
-
+### 一些mbed类库
   
-
-**Warning: some default "PinName" in headers are for NXP LPC1768 platform, please remember to use the correct "PinName" if you are using a different board.**
-
 **警告: 头文件中某些预设针脚名(PinName)只能用于NXP LPC1768开发板，如果您使用不同的硬件平台，请在创建对象时使用正确的PinName，否则可能导致硬件损坏。** 
-
   
-
 ### max7219 / MAX7219 8x8点阵LED驱动器
 
 - 封装自SPI接口，支持多路显示。
@@ -27,3 +21,6 @@
 
 ### psensor / 莫合实业 试验型弯曲传感器
 - 暂无介绍
+
+### amux16 / 16路模拟信号 多路复用器
+- 包含文件 amux16.h amux16.cpp
