@@ -1,4 +1,5 @@
-#include "mbed.h"
+#ifndef PSENSOR_H
+#define PSENSOR_H
 
 const int BUFFER_SIZE = 20;
 
@@ -23,3 +24,5 @@ class psensor
         float offset1,offset2;
         float limit1,limit2;
 };
+
+#endif
