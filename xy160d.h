@@ -1,4 +1,4 @@
-#include "mbed.h"
+//XY160D DC Motor Drive
 
 #ifndef XY160D_H
 #define XY160D_H
