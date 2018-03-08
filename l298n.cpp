@@ -1,3 +1,6 @@
+#include "mbed.h"
+//该行在旧版本中需要使用，若提示Thread namespace错误请加入下一行
+//#include "rtos.h"
 #include "l298n.h"
 
 l298n::l298n(PinName pin1,PinName pin2,PinName pin3,PinName pin4):out1(pin1),out2(pin2),out3(pin3),out4(pin4)
