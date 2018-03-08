@@ -1,3 +1,4 @@
+#include "mbed.h"
 #include "psensor.h"
 
 psensor::psensor(PinName port1, PinName port2):input1(port1),input2(port2)
