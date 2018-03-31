@@ -5,7 +5,7 @@
 const int XY160D_FORWARD    = 0x01;
 const int XY160D_BACKWARD   = 0x02;
 const int XY160D_HANG       = 0x01 | 0x02;
-const int XY160D_BREAK      = 0;
+const int XY160D_BRAKE      = 0;
 
 class xy160d : public PwmOut
 {
