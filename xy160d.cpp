@@ -29,7 +29,8 @@ void xy160d::setmode(int mode_tmp)
     }
 }
 
-void xy160d::operator=(const float &value)
+float xy160d::operator=(const float &value)
 {
     write(value);
+    return value;
 }
