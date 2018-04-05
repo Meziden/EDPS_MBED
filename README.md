@@ -19,8 +19,9 @@
 - 封装自PWM，已加入正反转间刹车功能。
 - 包含文件 xy160d.h xy160d.cpp，示例程序为tan90°
 
-### psensor / 莫合实业 试验型弯曲传感器
-- 暂无介绍
+### psensor / psensor_v2 / 莫合实业 试验型弯曲传感器
+- psensor.h包含了输入输出接口
+- psensor_v2.h为纯数据对象类，使用psensor::write()更新数据
 
 ### amux16 / 16路模拟信号 多路复用器
 - 包含文件 amux16.h amux16.cpp
