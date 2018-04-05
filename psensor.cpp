@@ -1,10 +1,12 @@
 #include "mbed.h"
 #include "psensor.h"
 
-psensor::psensor(PinName port1, PinName port2):input1(port1),input2(port2)
+psensor::psensor(PinName port1, PinName port2, PinName port3):input1(port1),input2(port2),position(port3)
 {
-    limit1 = limit2 = 0.05;
-    offset1 = offset2 = 0.0;
+    speedlim1 = speedlim2 = 0.40;
+    poslim1 = 0.47;
+    poslim2 = 0.64;
+    offset1 = offset2 = 1.0;
     for(size_t i = 0; i != BUFFER_SIZE; i++)
         buffer1[i] = buffer2[i] = 0;
 }
@@ -32,48 +34,107 @@ int psensor::update()
     return 0;
 }
 
+float psensor::getvol(int volnum)
+{
+    if(volnum == 1)
+        return input1.read();
+    if(volnum == 2)
+        return input2.read();
+    return 0;
+}
+
+float psensor::getposition()
+{
+    return position.read();
+}
+
 float psensor::getspeed()
 {
     update();
-    float vol1 = buffer1[0];
-    float vol2 = buffer2[0];
+    float vol1 = 0, vol2 = 0;
+    for(size_t i = 0; i < 4; i++)
+    {
+        vol1 += (buffer1[i]/4);
+        vol2 += (buffer2[i]/4);
+    }
     float speed_tmp = 0.0;
     
-    //PRE-PROCESS
-    vol1 = offset1 - vol1;
-    vol2 = offset2 - vol2;
+    //PRE-PROCESS ------------------------
+    vol1 = (vol1 - offset1) * 1.6;
+    vol2 = (vol2 - offset2) * 2.0;
     
     if(vol1 < 0)
         vol1 = 0.0;
 
-    if(vol1 > limit1)
-        vol1 = limit1;
+    if(vol1 > speedlim1)
+        vol1 = speedlim1;
         
     if(vol2 < 0)
         vol2 = 0.0;
                 
-    if(vol2 > limit2)
-        vol2 = limit2;
+    if(vol2 > speedlim2)
+        vol2 = speedlim2;
     
-    //CONTROL LOGIC
-    if(vol2 >= 0.02)
+    //CONTROL LOGIC ----------------------
+    if(vol2 >= 0.02 && position.read() < poslim2)
         speed_tmp = -vol2;
-    
-    if(vol1 > 0.03 && vol2 < 0.02)
-        speed_tmp = vol1;
-    
-    if(vol1 <= 0.03 && vol2 < 0.02)
-        speed_tmp = 0.0;
-    
+    else
+    {
+        if(vol1 > 0.03 && position.read() > poslim1)
+            speed_tmp = vol1;
+        else
+            speed_tmp = 0.0;
+    }
     return speed_tmp;
 }
 
-int psensor::calibrate()
+float psensor::getspeed_poscalib()
 {
     update();
-    float error1 = 0;
-    float error2 = 0;
+    float vol1 = 0, vol2 = 0;
+    for(size_t i = 0; i < 4; i++)
+    {
+        vol1 += (buffer1[i]/4);
+        vol2 += (buffer2[i]/4);
+    }
+    float speed_tmp = 0.0;
     
+    //PRE-PROCESS ------------------------
+    vol1 = (vol1 - offset1) * 1.6;
+    vol2 = (vol2 - offset2) * 2.0;
+    
+    if(vol1 < 0)
+        vol1 = 0.0;
+
+    if(vol1 > speedlim1)
+        vol1 = speedlim1;
+        
+    if(vol2 < 0)
+        vol2 = 0.0;
+                
+    if(vol2 > speedlim2)
+        vol2 = speedlim2;
+    
+    //CONTROL LOGIC ----------------------
+    if(vol2 >= 0.02)
+        speed_tmp = -vol2;
+    else
+    {
+        if(vol1 > 0.03)
+            speed_tmp = vol1;
+        else
+            speed_tmp = 0.0;
+    }
+    return speed_tmp;
+}
+
+int psensor::calib_pressure()
+{
+    update();
+    float error1 = 0.0;
+    float error2 = 0.0;
+    
+    //absolute summation
     for(size_t i = 1; i != BUFFER_SIZE; i++)
     {
         float error1_tmp = buffer1[i] - buffer1[i-1];
@@ -98,4 +159,13 @@ int psensor::calibrate()
     }
     else
         return 0;
+}
+
+int psensor::calib_position(int posnum)
+{
+    if (posnum == CALIB_POSITION_MIN)
+        poslim1 = position.read();
+    if (posnum == CALIB_POSITION_MAX)
+        poslim2 = position.read();
+    return 0;
 }
