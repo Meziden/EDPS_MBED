@@ -1,21 +1,26 @@
 #include "mbed.h"
 #include "hmc5883l.h"
 
-hmc5883l::hmc5883l(PinName sda_pin, PinName scl_pin):I2C(sda_pin,scl_pin)
+hmc5883l::hmc5883l(PinName sda_pin, PinName scl_pin):I2C(sda_pin,scl_pin),
+                                                     offset_x(CALIB_OFFSET_X),
+                                                     offset_y(CALIB_OFFSET_Y),    //Y-AXIS unused
+                                                     offset_z(CALIB_OFFSET_Z),
+                                                     scale_x(CALIB_SCALE_X),
+                                                     scale_y(CALIB_SCALE_Y),      //Y-AXIS unused
+                                                     scale_z(CALIB_SCALE_Z)
 {
-    //Default Configuration
-    offset_x = 0.09;
-    offset_y = 0.0;             //Y-AXIS unused
-    offset_z = 0.05;
-    scale_x = 1.0;
-    scale_y = 1.0;              //Y-AXIS unused
-    scale_z = 0.97;
     //Device Initialization
     frequency(100000);          //100kHz IIC bus
     start();
     write(0x3c);                //device write
     write(0x00);                //write to 0x00
-    write(0x78);                //configuration
+    write(0x78);                //speed configuration
+    stop();
+    
+    start();
+    write(0x3c);                //device write
+    write(0x01);                //write to 0x00
+    write(GAIN_GAUSS_1090 & 0xE0);   //range configuration
     stop();
     
     start();
@@ -91,4 +96,13 @@ void hmc5883l::setscale(float arg_x,
     scale_x = arg_x;
     scale_y = arg_y;
     scale_z = arg_z;
+}
+
+void hmc5883l::setgain(int gainflag)
+{
+    start();
+    write(0x3c);                //device write
+    write(0x01);                //write to 0x00
+    write(gainflag & 0xE0);   //range configuration
+    stop();
 }
