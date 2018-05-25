@@ -7,8 +7,11 @@ const int BUFFER_SIZE = 20;
 const int CALIB_POSITION_MAX = 1;
 const int CALIB_POSITION_MIN = 2;
 
-const float SPEED_LIMIT = 0.8;
-const float CALIB_SPEED_LIMIT = 0.15;
+const float GLOVE_POSITION_MIN = 0.15;
+const float GLOVE_POSITION_MAX = 0.35;
+
+const float SPEED_LIMIT = 0.35;
+const float CALIB_SPEED_LIMIT = 0.35;
 
 class psensor
 {
@@ -22,8 +25,11 @@ class psensor
         int calib_pressure();
         int calib_position(int);
         
+        //Glove Calibrate APIs
+        int setposlim1(float);
+        int setposlim2(float);
+        
         float getspeed_poscalib();
-        float getspeed_poscalib_glove();
         
         //DEBUG APIs
         float getvol(int);
