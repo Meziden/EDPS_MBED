@@ -13,6 +13,7 @@ hmc5883l::hmc5883l(PinName sda_pin, PinName scl_pin):I2C(sda_pin,scl_pin),
     
     setbias(BIAS_NONE);         //contains other operations at ConfigRegister A
     setgain(GAIN_GAUSS_660);
+    wait_ms(100);
     setmode(MODE_STREAM);
 }
 
@@ -86,7 +87,7 @@ void hmc5883l::setgain(int gainflag)
     start();
     write(0x3c);                //device write
     write(0x01);                //write to 0x01
-    write(gainflag);     //gain configuration
+    write(gainflag);            //gain configuration
     stop();
 }
 
@@ -95,7 +96,7 @@ void hmc5883l::setbias(int biasflag)
     start();
     write(0x3c);                //device write
     write(0x00);                //write to 0x01
-    write(biasflag | 0x78);     //gain configuration
+    write(biasflag | 0x78);     //bias configuration
     stop();
 }
 
