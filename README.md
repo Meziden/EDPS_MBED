@@ -16,10 +16,10 @@
 - 该类仅对应一路电机驱动，对于一块具有两路驱动XY160D驱动板，可以有两个对象。
 
 ### exskl_psensor 莫合实业外骨骼传感器 
-exskl_psensor为纯数据类，需要与xy160d+amux16配合使用。
+- exskl_psensor为纯数据类，需要与xy160d+amux16配合使用。
 
 ### exskl_glove 莫合实业外骨骼传感器-动作追踪型
-exskl_glove为纯数据类，需要与xy160d+amux16配合使用。
+- exskl_glove为纯数据类，需要与xy160d+amux16配合使用。
 
 ### amux16 / 16路模拟信号 多路复用器
 - 只有一个模拟输入？不存在的。
