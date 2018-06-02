@@ -26,7 +26,7 @@ int pulse_analyze(const float* VolArr);	//Prototype of Pulse Analyze
 int main()
 {
     Dec_power=1;					//Turn on power supply
-    wait_ms(100);					//wait for a while
+    wait_ms(50);					//wait for a while
     max7219 screen_lhs(p11,p12,p13,p5);    //Screen 1 (Left Hand Side)
     max7219 screen_rhs(p11,p12,p13,p6);    //Screen 2 (Right Hand Side)
     while(1)
