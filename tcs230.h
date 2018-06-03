@@ -2,9 +2,9 @@
 #define TCS230_H
 
 const float TCS230_TIMEOUT = 0.05;
+const int RGB_CALIB[3]  = {2200,1900,2500};//for [1,1] freq configuration.
 
 //DO NOT CHANGE THESE VALUE, OR INVALID ACCESS EXCEPTION HAPPENS
-const int RGB_CALIB[3]  = {2200,1900,2500};//for [1,1] freq configuration.
 const int COLOR_RED     = 0;
 const int COLOR_GREEN   = 1;
 const int COLOR_BLUE    = 2;
