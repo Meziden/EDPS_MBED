@@ -23,11 +23,15 @@ imujy61::imujy61(PinName tx_pin, PinName rx_pin) : Serial(tx_pin,rx_pin)
 
 void imujy61::callback_rcvd()
 {
-    read(buffer, 11);
-    
-    //if not a packet
-    if(buffer[0] != 0x55)
-        return;
+    while(1)
+    {
+        read(buffer, 1);
+        if(buffer[0] != 0x55)
+            continue;
+        else
+            break;
+    }
+    read(buffer+1, 10);
     
     switch(buffer[1])
     {
