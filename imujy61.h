@@ -19,6 +19,8 @@ class imujy61 : public Serial
     
     private:
     void callback_rcvd();
+    size_t rcvd_count;
+    volatile bool packet_ready;
 };
 
 #endif
