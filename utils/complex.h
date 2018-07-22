@@ -1,6 +1,5 @@
 // WARNING: This is only a simple, naive and uncompleted encapsulation for complex in ARM mbed.
-// If you got any problem, please email Zhang Siming(zhangsiming1724@hotmail.com) for more information.
-// Or issue at Meziden@GitHub(github.com/Meziden/mbed-libmezi).
+// If you got any problem, please email Zhang Siming(zhangsiming1724@hotmail.com) for more information. 
 #ifndef COMPLEX_H
 #define COMPLEX_H
 
@@ -28,10 +27,11 @@ class complex
     complex operator/(const complex &obj);
     
     // External functions
-    complex exp();
     complex conj();
     float abs();
     float angle();
 };
+
+complex exp(const complex &obj);
 
 #endif
