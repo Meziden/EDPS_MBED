@@ -1,5 +1,3 @@
-//#include <iostream>
-//#include <cmath>
 #include "mbed.h"
 #include "complex.h"
 
@@ -71,15 +69,6 @@ complex complex::operator/(const complex &obj)
     return result;
 }
 
-// External Functions
-complex complex::exp()
-{
-    complex result;
-    result.real = pow(2.17828, (double)real) * cos(imag);
-    result.imag = pow(2.17828, (double)real) * sin(imag);
-    return result;
-}
-
 complex complex::conj()
 {
     complex result;
@@ -96,4 +85,13 @@ float complex::abs()
 float complex::angle()
 {
     return atan2(imag, real);
+}
+
+
+complex exp(const complex &obj)
+{
+    complex result;
+    result.real = pow((double)2.718281828459045, (double)obj.real) * cos(obj.imag);
+    result.imag = pow((double)2.718281828459045, (double)obj.real) * sin(obj.imag);
+    return result;
 }
