@@ -1,37 +1,97 @@
-// WARNING: This is only a simple, naive and uncompleted encapsulation for complex in ARM mbed.
-// If you got any problem, please email Zhang Siming(zhangsiming1724@hotmail.com) for more information. 
-#ifndef COMPLEX_H
-#define COMPLEX_H
+#include "mbed.h"
+#include "complex.h"
 
-class complex
+// Default Constructor
+complex::complex()
 {
-    public:
-    // Default Constructor
-    complex();
-    // Another Constructor
-    complex(float arg_real, float arg_imag = 0.0f);
-    // Copy Constructor
-    complex(const complex &obj);
-    
-    // The most important data.
-    float real;
-    float imag;
-    
-    // Operator Overloads
-    complex& operator=(const complex &obj);
-    complex operator+(const complex &obj);
-    complex operator-(const complex &obj);
-    complex operator-();
-    
-    complex operator*(const complex &obj);
-    complex operator/(const complex &obj);
-    
-    // External functions
-    complex conj();
-    float abs();
-    float angle();
-};
+    real = imag = 0;
+}
 
-complex exp(const complex &obj);
+// Envaluate Constructor
+complex::complex(float arg_real, float arg_imag)
+{
+    real = arg_real;
+    imag = arg_imag;
+}
 
-#endif
+// Copy Constructor
+complex::complex(const complex &obj)
+{
+    real = obj.real;
+    imag = obj.imag;
+}
+
+// Operator Overloads
+complex& complex::operator=(const complex &obj)
+{
+    real = obj.real;
+    imag = obj.imag;
+    return *this;
+}
+
+complex complex::operator+(const complex &obj)
+{
+    complex result;
+    result.real = real + obj.real;
+    result.imag = imag + obj.imag;
+    return result;
+}
+
+complex complex::operator-(const complex &obj)
+{
+    complex result;
+    result.real = real - obj.real;
+    result.imag = imag - obj.imag;
+    return result;
+}
+
+complex complex::operator-()
+{
+    complex result;
+    result.real = -real;
+    result.imag = -imag;
+    return result;
+}
+
+complex complex::operator*(const complex &obj)
+{
+    complex result;
+    result.real = real * obj.real - imag * obj.imag;
+    result.imag = real * obj.imag + imag * obj.real;
+    return result;
+}
+
+complex complex::operator/(const complex &obj)
+{
+    complex result;
+    result.real = (real * obj.real + imag * obj.imag) / (obj.real * obj.real + obj.imag * obj.imag);
+    result.imag = (imag * obj.real - real * obj.imag) / (obj.real * obj.real + obj.imag * obj.imag);
+    return result;
+}
+
+complex complex::conj()
+{
+    complex result;
+    result.real = real;
+    result.imag = -imag;
+    return result;
+}
+
+float complex::abs()
+{
+    return sqrt(real*real + imag*imag);
+}
+
+float complex::angle()
+{
+    return atan2(imag, real);
+}
+
+
+complex exp(const complex &obj)
+{
+    complex result;
+    result.real = pow((double)2.718281828459045, (double)obj.real) * cos(obj.imag);
+    result.imag = pow((double)2.718281828459045, (double)obj.real) * sin(obj.imag);
+    return result;
+}
