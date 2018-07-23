@@ -1,6 +1,10 @@
-#include "stdio.h"
-#include "stdlib.h"
+//#include "stdio.h"
+//#include "stdlib.h"
+#include "mbed.h"
 #include "complex.h"
+
+//This source file is not a ready-to-use version.
+//Copying the function void fft(complex* target, size_t n) into your main.cpp may be a better choice.
 
 void fft(complex* target, size_t n)
 {
