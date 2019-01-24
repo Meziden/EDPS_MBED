@@ -1,4 +1,3 @@
-//XY160D DC Motor Drive
 #ifndef XY160D_H
 #define XY160D_H
 
@@ -12,14 +11,12 @@ class xy160d : public PwmOut
     public:
         //constructors
         xy160d(PinName pwmpin, PinName ctlpin1, PinName ctlpin2);
-        
         float operator=(const float&);
-        void setmode(int mode_tmp);
 
     private:
+        void setmode(int mode_tmp);
         DigitalOut ctl_1;
         DigitalOut ctl_2;
-        
         int mode_present;
 };
 
