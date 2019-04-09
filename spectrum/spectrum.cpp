@@ -1,21 +1,30 @@
 #include "mbed.h"
 #include "spectrum.h"
 
-spectrum::spectrum(const char* node_name, void (*node_func)(void))
+spectrum::spectrum(const char* node_name, void (*node_func)(void* arg), void (*prev_func)(void* arg), const int node_type)
 {
     strcpy(m_name,node_name);
+    
+    // WARNING: DO NOT USE ARGUMENTS WHEN THE FUNCTION IS USED AS A DAEMON.
+    // OR THE TICKER MAY LEAD TO UNDEFINED BEHAVIOUR.
     m_func = node_func;
     
-    for(size_t i = 0; i!=5; i++)
+    m_prev = prev_func;
+    m_type = node_type;
+    
+    for(size_t i = 0; i != SUBNODE_MAX; i++)
         subnode_vec[i] = NULL;
     
     subnode_num = 0;
     m_parent = NULL;
+    
+    if(m_type == NODE_TYPE_DAEMON && m_func != NULL)
+        m_ticker.attach((void(*)(void))m_func, DAEMON_PERIOD);
 }
 
 int spectrum::add_node(spectrum* node_ptr)
 {
-    if(subnode_num != 5)
+    if(subnode_num != SUBNODE_MAX)
     {
         node_ptr->m_parent = this;
         subnode_vec[subnode_num] = node_ptr;
