@@ -4,7 +4,7 @@
 const int SUBNODE_MAX = 6;
 const int NODE_TYPE_SUBFNC = 0;
 const int NODE_TYPE_DAEMON = 1;
-const float DAEMON_PERIOD = 0.1;
+const float DAEMON_PERIOD = 0.01;
 
 
 // Single SpectrumGL Node Definition
