@@ -9,13 +9,18 @@ joystick424::joystick424(PinName pin_x, PinName pin_y, PinName pin_k): m_stick_x
     k=0;
     m_flag = 0;
     m_flag_on = 1;
-    attach(callback(this,&joystick424::_refresh), FRAMETIME);
+    m_analog_ctl = 1;
 }
 
-void joystick424::_refresh(void)
+void joystick424::m_refresh(void)
 {
-    x = m_stick_x.read();
-    y = m_stick_y.read();
+    if(m_analog_ctl)
+    {
+        x = 1-m_stick_x.read();
+        // New Hardware Configuration
+        y = 1-m_stick_y.read();
+        //y = m_stick_y.read();
+    }
     k = !m_stick_k;
     
     if(m_flag_on)
