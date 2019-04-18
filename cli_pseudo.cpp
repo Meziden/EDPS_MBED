@@ -59,6 +59,7 @@ void cli_callback(void)
         if(cmd_buf[i] == '\0' || cmd_buf[i] == '\n' || cmd_buf[i] == '\r')
         {
             cmd_buf[i] = '\0';
+            break;
         }
         
         if(cmd_argc == MAX_ARGUMENT)
