@@ -1,11 +1,15 @@
 #ifndef SPECTRUM_H
 #define SPECTRUM_H
 
+/*
+ * Data Structure for Spectrum UI v1.1
+ * with static members, no need for global variables
+ */
+
 const int SUBNODE_MAX = 6;
 const int NODE_TYPE_SUBFNC = 0;
 const int NODE_TYPE_DAEMON = 1;
-const float DAEMON_PERIOD = 0.01;
-
+const float DAEMON_PERIOD = 0.02;
 
 // Single SpectrumGL Node Definition
 class spectrum
@@ -18,6 +22,9 @@ class spectrum
     
     // Parent Node
     spectrum* m_parent;
+    static spectrum* s_nodenow;
+    static int s_rootflag;
+    static int s_cursor;
     
     // Node Name, Node Type and Function
     char m_name[16];
