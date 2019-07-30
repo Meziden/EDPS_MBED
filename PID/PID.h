@@ -14,12 +14,12 @@ class PID : public Ticker
 {
     public:
     // Constructor
-    PID(piderr_clb_t err_clb,
-        pidctl_clb_t ctl_clb,
-        float par_p = 1.0f,
-        float par_i = 0.0f,
-        float par_d = 0.0f,
-        float frequency = 50.0f);
+    PID(piderr_clb_t err_clb,       // float mygeterr(void), 用于获取误差的函数指针参数
+        pidctl_clb_t ctl_clb,       // void mysetctl(float), 用于设置控制信号的函数指针参数
+        float par_p = 1.0f,         // Proportion Gain - 比例增益
+        float par_i = 0.1f,         // Integral Gain - 累加增益
+        float par_d = 0.0f,         // Derivative Gain - 差分增益
+        float frequency = 50.0f);   // Sampling Frequency - 采样频率
     
     // PID Parameters and Internal Data
     float m_parameter_p;
