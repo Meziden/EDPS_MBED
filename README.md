@@ -5,10 +5,14 @@
 **警告: 某些重载构造函数的预设针脚名(PinName)只能用于NXP LPC1768开发板，如果您使用不同的硬件平台，请在创建对象时使用正确的PinName，否则可能导致硬件损坏。** 
 
 ### 现已支持：
-**SerialCLI 命令解释器2.1**
+**SerialCLI / 命令解释器2.1**
 - 命令解释器，将宁（您）的函数与命令绑定。
 - 该解释器将串口输入分解为参数数量argc与参数列表argv\*\*传入您的函数，使用UART接收中断实现异步逻辑。
 - 使用示例见examples/main_SerialCLI.cpp
+
+**PID / 单路PID控制器**
+- 将宁（您）的float geterror(void)函数与void setctl(float signal_ctl)函数在该控制器初始化时传入，即可进行PID控制。
+- 示例：`PID myPIDController(geterror, setctl)`
 
 **max7219 / MAX7219 8x8点阵LED驱动器**
 - 封装自SPI接口，支持多路显示。
