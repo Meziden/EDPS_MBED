@@ -21,7 +21,7 @@ const int OVERFLOW_TABLE_SIZE = 16;
 // Command Interpreter Parameters
 const int MAX_ARGUMENT = 10;
 const int SCHEDULER_BUFSIZE = 320;  // 320bytes
-const bool SCHEDULER_CLI = 1;
+const bool SCHEDULER_CLI = 1;       // Disable when using two SerialCLI for communication.
 
 // SerialCLI Function Typedef
 typedef int (*serialcli_fp_t)(int, char**);
