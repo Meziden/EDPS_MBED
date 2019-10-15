@@ -27,21 +27,30 @@ SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : Serial(pin_
 
 void SerialCLI::rxirq_clb()
 {
+    // Get Command
     char cmd_buf[SCHEDULER_BUFSIZE]  = {'\0'};
+    gets(cmd_buf, SCHEDULER_BUFSIZE);
     
-    /* Get Command */
-    gets(cmd_buf,SCHEDULER_BUFSIZE);
-    
+    // Command Line Echo
     if(SCHEDULER_CLI)
         printf("%s",cmd_buf);
     
-    scheduler(cmd_buf);
+    // Exception Handling
+    switch(scheduler(cmd_buf))
+    {
+        case -1:
+            printf("[SerialCLI] Empty Command.\n");
+            break;
+        case -2:
+            printf("[SerialCLI] Command not found.\n");
+            break;
+        default:
+            break;
+    }
     
     // After Executing Command.
     if(SCHEDULER_CLI)
-        printf("serialcli >",cmd_buf);
-    
-    //TODO: Exception Handling
+        printf("serialcli >");
 }
 
 int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
@@ -56,21 +65,24 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
     }
     // Using Public Overflow Table
     else
-    {
-        // Check if the name already exist.
-        if(!strcmp(cmd_name, m_function_table[simplehash(cmd_name)].node_name))
-        {
-            if(SCHEDULER_CLI)
-                printf("[Error] Command %s already registered.\n",cmd_name);
-            return -1;
-        }
-        
+    {   
         // Check if the overflow table is full
         if(m_overflow_used == OVERFLOW_TABLE_SIZE)
         {
             if(SCHEDULER_CLI)
                 printf("[Error] Hash/Overflow Table got no space for this command.\n");
             return -1;
+        }
+        
+        // Check if the name already exist in overflow table.
+        for(size_t i = 0; i != m_overflow_used; i++)
+        {
+            if(!strcmp(cmd_name, m_overflow_table[i].node_name))
+            {
+                if(SCHEDULER_CLI)
+                    printf("[Error] Command %s already registered.\n",cmd_name);
+                return -1;
+            }
         }
         
         // Setting up name.
@@ -86,7 +98,9 @@ int SerialCLI::scheduler(char* cmd_buf)
 {
     /* Parsing input string. */
     int cmd_argc = 1;
+    /* ARGV is only a pointer set for CMDBUF, not real buffers */
     char* cmd_argv[MAX_ARGUMENT] = {cmd_buf};
+    
     int space_flag = 0;
     /* Exit if reach the end of buffer */
     for(size_t i = 0; i != SCHEDULER_BUFSIZE; i++)
@@ -116,38 +130,35 @@ int SerialCLI::scheduler(char* cmd_buf)
         }
     }
     
-    int result = 0;
+    // For Empty Command, which simple hash returns 0
+    if(!strcmp(cmd_argv[0],""))
+        return -1;
     
     // Node is available and no hash collision
     if(!strcmp(cmd_argv[0], m_function_table[simplehash(cmd_argv[0])].node_name))
     {
         // Execute the binded function
-        result = (*(m_function_table[simplehash(cmd_argv[0])].node_func))(cmd_argc, cmd_argv);
+        return (*(m_function_table[simplehash(cmd_argv[0])].node_func))(cmd_argc, cmd_argv);
     }
-    // Continue Searching in Overflow Table for hash collision
+    // Continue Searching in Overflow Table for hash collision situations
     else
     {
         for(size_t i = 0; i != m_overflow_used; i++)
         {
-            // Reached end of the overflow table
-            if(!strcmp("", m_function_table[i].node_name))
-                break;
             // Found in Overflow Table
-            if(!strcmp(cmd_argv[0], m_function_table[i].node_name))
-                result = (*(m_function_table[simplehash(cmd_argv[0])].node_func))(cmd_argc, cmd_argv);
+            if(!strcmp(cmd_argv[0], m_overflow_table[i].node_name))
+            {
+                return (*(m_overflow_table[simplehash(cmd_argv[0])].node_func))(cmd_argc, cmd_argv);
+            }
         }
-        // Not found in whole Hash Table
-        printf("[Error] Command %s not found.\n", cmd_argv[0]);
-        result = -1;
     }
-    
-    return result;
+    return -2;
 }
 
 int SerialCLI::simplehash(char* cmd_name)
 {
-    int sum;
-    for(sum = 0; cmd_name[0] != '\0'; cmd_name++)
+    int sum = 0;   // The return value should be 0 when processing empty strings.
+    for(; !(*cmd_name); cmd_name++)
         sum += (int)cmd_name[0];
     // Ensure the return address is in proper range.
     return (sum % FUNCTION_TABLE_SIZE);
