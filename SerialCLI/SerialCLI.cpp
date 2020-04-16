@@ -63,6 +63,13 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
         // Setting up Function Pointer
         m_function_table[simplehash(cmd_name)].node_func = cmd_fp;
     }
+    else if(!strcmp(cmd_name, m_function_table[simplehash(cmd_name)].node_name))
+    {
+       	// Registered Command
+        if(SCHEDULER_CLI)
+         	printf("[Error] Command %s already registered.\n",cmd_name);
+		return -1;
+    }   
     // Using Public Overflow Table
     else
     {   
@@ -90,8 +97,8 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
         // Setting up Function Pointer
         m_overflow_table[m_overflow_used].node_func = cmd_fp;
         m_overflow_used++;
+        return 0;
     }
-    return 0;    
 }
 
 int SerialCLI::scheduler(char* cmd_buf)
