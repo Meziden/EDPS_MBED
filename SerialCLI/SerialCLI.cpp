@@ -39,12 +39,12 @@ void SerialCLI::rxirq_clb()
     switch(scheduler(cmd_buf))
     {
         case -1:
-			if(SCHEDULER_CLI)
-            	printf("[SerialCLI] Empty Command.\n");
+            if(SCHEDULER_CLI)
+                printf("[SerialCLI] Empty Command.\n");
             break;
         case -2:
-			if(SCHEDULER_CLI)
-            	printf("[SerialCLI] Command not found.\n");
+            if(SCHEDULER_CLI)
+                printf("[SerialCLI] Command not found.\n");
             break;
         default:
             break;
@@ -60,6 +60,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
     // The corresponding main hash table node is now empty.
     if(m_function_table[simplehash(cmd_name)].node_func == NULL)
     {
+        printf("Direct Adding.\n");
         // Setting up name.
         strcpy(m_function_table[simplehash(cmd_name)].node_name, cmd_name);
         // Setting up Function Pointer
@@ -67,14 +68,15 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
     }
     else if(!strcmp(cmd_name, m_function_table[simplehash(cmd_name)].node_name))
     {
-       	// Registered Command
+        // Registered Command
         if(SCHEDULER_CLI)
-         	printf("[Error] Command %s already registered.\n",cmd_name);
-		return -1;
+            printf("[Error] Command %s already registered.\n",cmd_name);
+        return -1;
     }   
     // Using Public Overflow Table
     else
     {   
+        printf("Using Overflow Table.\n");
         // Check if the overflow table is full
         if(m_overflow_used == OVERFLOW_TABLE_SIZE)
         {
@@ -101,6 +103,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
         m_overflow_used++;
         return 0;
     }
+    return -1;
 }
 
 int SerialCLI::scheduler(char* cmd_buf)
@@ -157,18 +160,19 @@ int SerialCLI::scheduler(char* cmd_buf)
             // Found in Overflow Table
             if(!strcmp(cmd_argv[0], m_overflow_table[i].node_name))
             {
-                return (*(m_overflow_table[simplehash(cmd_argv[0])].node_func))(cmd_argc, cmd_argv);
+                return (*(m_overflow_table[i].node_func))(cmd_argc, cmd_argv);
             }
         }
     }
     return -2;
 }
 
-int SerialCLI::simplehash(char* cmd_name)
+int SerialCLI::simplehash(char* const cmd_name)
 {
     int sum = 0;   // The return value should be 0 when processing empty strings.
-    for(; !(*cmd_name); cmd_name++)
-        sum += (int)cmd_name[0];
+    char* cmd_name_tmp = cmd_name;
+    for(; (*cmd_name_tmp); cmd_name_tmp++)
+        sum += (uint8_t)cmd_name_tmp[0];
     // Ensure the return address is in proper range.
     return (sum % FUNCTION_TABLE_SIZE);
 }
