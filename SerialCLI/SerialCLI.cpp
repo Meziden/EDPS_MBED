@@ -39,10 +39,12 @@ void SerialCLI::rxirq_clb()
     switch(scheduler(cmd_buf))
     {
         case -1:
-            printf("[SerialCLI] Empty Command.\n");
+			if(SCHEDULER_CLI)
+            	printf("[SerialCLI] Empty Command.\n");
             break;
         case -2:
-            printf("[SerialCLI] Command not found.\n");
+			if(SCHEDULER_CLI)
+            	printf("[SerialCLI] Command not found.\n");
             break;
         default:
             break;
