@@ -1,15 +1,17 @@
 /* 
  * SerialCLI: CLI Command Interpreter for Serial Ports
- * Designed for Exoskeleton Control System 2.1
  * 
- * CHANGELOG from v2.0:
+ * CHANGELOG v2.3:
+ * + Command Memory Layout Display
  * + OOP API.
  * + Faster and More General Command Parsing.
- * + Command Function Hashtable: Faster Function Match.
+ * + Command Function Hashtable: Faster Function Matching.
  */
 
 #ifndef SERIALCLI_H
 #define SERIALCLI_H
+
+/* These configurations need to be adjusted when problems shows up in memory allocation. */
 
 // Function Name Length Limit
 const int FUNCTION_NAME_LIMIT = 16;
@@ -44,6 +46,9 @@ class SerialCLI : public Serial
         // Add Functions
         int add_function(char* cmd_name, serialcli_fp_t cmd_fp);
         
+        // Display Layout
+        int display_functions(void);
+        
         // Command Interpreter Function
         int scheduler(char* cmd_str);
         
@@ -52,7 +57,7 @@ class SerialCLI : public Serial
         void rxirq_clb();
         
         // Function - Name Bidings, use hash() + strcmp() for higher efficiency.
-        int simplehash(char* cmd_name);
+        int simplehash(char* const cmd_name);
         
         // Function Pointer Table
         serialcli_node_t m_function_table[FUNCTION_TABLE_SIZE];
