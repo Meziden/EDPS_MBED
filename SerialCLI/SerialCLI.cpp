@@ -22,7 +22,7 @@ SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : Serial(pin_
     attach(callback(this, &SerialCLI::rxirq_clb), Serial::RxIrq);
     
     if(SCHEDULER_CLI)
-        printf("\n[SerialCLI] Initialization Complete.\nserialcli >");
+        printf("\r\n[SerialCLI] Initialization Complete.\r\nserialcli >");
 }
 
 void SerialCLI::rxirq_clb()
@@ -40,11 +40,11 @@ void SerialCLI::rxirq_clb()
     {
         case -1:
             if(SCHEDULER_CLI)
-                printf("[SerialCLI] Empty Command.\n");
+                printf("[SerialCLI] Empty Command.\r\n");
             break;
         case -2:
             if(SCHEDULER_CLI)
-                printf("[SerialCLI] Command not found.\n");
+                printf("[SerialCLI] Command not found.\r\n");
             break;
         default:
             break;
@@ -57,10 +57,16 @@ void SerialCLI::rxirq_clb()
 
 int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
 {
+    if(cmd_fp == NULL || cmd_name[0] == '\0' )
+    {
+        if(SCHEDULER_CLI)
+            printf("Error: The command or function is empty.\r\n");
+        return 0;
+    }
+    
     // The corresponding main hash table node is now empty.
     if(m_function_table[simplehash(cmd_name)].node_func == NULL)
     {
-        printf("Direct Adding.\n");
         // Setting up name.
         strcpy(m_function_table[simplehash(cmd_name)].node_name, cmd_name);
         // Setting up Function Pointer
@@ -70,18 +76,17 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
     {
         // Registered Command
         if(SCHEDULER_CLI)
-            printf("[Error] Command %s already registered.\n",cmd_name);
+            printf("[Error] Command %s already registered.\r\n",cmd_name);
         return -1;
     }   
     // Using Public Overflow Table
     else
     {   
-        printf("Using Overflow Table.\n");
         // Check if the overflow table is full
         if(m_overflow_used == OVERFLOW_TABLE_SIZE)
         {
             if(SCHEDULER_CLI)
-                printf("[Error] Hash/Overflow Table got no space for this command.\n");
+                printf("[Error] Hash/Overflow Table got no space for this command.\r\n");
             return -1;
         }
         
@@ -91,7 +96,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
             if(!strcmp(cmd_name, m_overflow_table[i].node_name))
             {
                 if(SCHEDULER_CLI)
-                    printf("[Error] Command %s already registered.\n",cmd_name);
+                    printf("[Error] Command %s already registered.\r\n", cmd_name);
                 return -1;
             }
         }
@@ -175,4 +180,32 @@ int SerialCLI::simplehash(char* const cmd_name)
         sum += (uint8_t)cmd_name_tmp[0];
     // Ensure the return address is in proper range.
     return (sum % FUNCTION_TABLE_SIZE);
+}
+
+int SerialCLI::display_functions(void)
+{
+    puts("\r\nSerialCLI - Memory Layout\r\n");
+    // Main Hash Table
+    puts("[Main Hash Table]\r\n----------------\r\n");
+    size_t count = 0;
+    for(size_t i = 0; i != FUNCTION_TABLE_SIZE; i++)
+    {
+        if(m_function_table[i].node_func != NULL)
+        {
+            printf("[%2d] %-12s 0x%X\r\n", i,m_function_table[i].node_name, (uint32_t)m_function_table[i].node_func);
+            count++;
+        }
+    }
+    printf("Usage: %d / %d\r\n", count, FUNCTION_TABLE_SIZE);
+    
+    // Overflow Table
+    puts("\r\n[Overflow Table]\r\n------------------\r\n");
+    for(size_t i = 0; i != m_overflow_used; i++)
+    {
+        printf("[%2d] %-12s 0x%X\r\n", i, m_overflow_table[i].node_name, (uint32_t)m_overflow_table[i].node_func);
+    }
+    printf("Usage: %d / %d\r\n", m_overflow_used, OVERFLOW_TABLE_SIZE);
+    puts("\r\n[End of Table]\r\n");
+    
+    return 0;
 }
