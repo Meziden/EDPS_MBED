@@ -1,7 +1,8 @@
 /* 
  * SerialCLI: CLI Command Interpreter for Serial Ports
  * 
- * CHANGELOG v2.3:
+ * CHANGELOG v3.0:
+ * + ANSI/VT102 Terminal Support
  * + Command Memory Layout Display
  * + OOP API.
  * + Faster and More General Command Parsing.
@@ -22,8 +23,8 @@ const int OVERFLOW_TABLE_SIZE = 16;
 
 // Command Interpreter Parameters
 const int MAX_ARGUMENT = 10;
-const int SCHEDULER_BUFSIZE = 320;  // 320bytes
-const bool SCHEDULER_CLI = 1;       // Disable when using two SerialCLI for communication.
+const int SCHEDULER_BUFSIZE = 64;  // 64bytes
+const bool SCHEDULER_CLI = 1;      // Disable when acting as duplex RPC framework.
 
 // SerialCLI Function Typedef
 typedef int (*serialcli_fp_t)(int, char**);
@@ -65,6 +66,13 @@ class SerialCLI : public Serial
         // Solving Hash Collision
         serialcli_node_t m_overflow_table[OVERFLOW_TABLE_SIZE];
         int m_overflow_used;
+        
+        // Command Line Buffer
+        char m_cmd_buf[SCHEDULER_BUFSIZE];
+        int m_buf_used;
+        
+        // Indicator
+        DigitalOut m_led;
 };
 
 #endif
