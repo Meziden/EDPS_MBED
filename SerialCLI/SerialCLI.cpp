@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "SerialCLI.h"
 
-SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : Serial(pin_tx, pin_rx, baudrate)
+SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : Serial(pin_tx, pin_rx, baudrate), m_led(LED2)
 {
     // Function Table Initialization
     for(size_t i = 0; i != FUNCTION_TABLE_SIZE; i++)
@@ -19,40 +19,92 @@ SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : Serial(pin_
     
     m_overflow_used = 0;
     
+    // Command Line Buffer
+    for(size_t i = 0; i!= SCHEDULER_BUFSIZE; i++)
+        m_cmd_buf[i] = '\0';
+    m_buf_used = 0;
+    
     attach(callback(this, &SerialCLI::rxirq_clb), Serial::RxIrq);
     
     if(SCHEDULER_CLI)
-        printf("\r\n[SerialCLI] Initialization Complete.\r\nserialcli >");
+    {
+        printf("\033[2J");      // Clear
+        
+        printf("SerialCLI v3.0\r\n--------------------\r\n");
+        printf("Configuration:\r\n");
+        printf("  - Buffer Length: %d\r\n  - Max Argument: %d\r\n", SCHEDULER_BUFSIZE, MAX_ARGUMENT);
+        printf("  - Hash Table: %d\r\n  - Overflow Table: %d\r\n", FUNCTION_TABLE_SIZE, OVERFLOW_TABLE_SIZE);
+        printf("--------------------\r\n");
+        printf("cli@stm32f429zi $ ");
+    }
 }
 
 void SerialCLI::rxirq_clb()
 {
+    m_led = 1;
     // Get Command
-    char cmd_buf[SCHEDULER_BUFSIZE]  = {'\0'};
-    gets(cmd_buf, SCHEDULER_BUFSIZE);
-    
-    // Command Line Echo
-    if(SCHEDULER_CLI)
-        printf("%s",cmd_buf);
-    
-    // Exception Handling
-    switch(scheduler(cmd_buf))
+    while(readable())
     {
-        case -1:
+        m_cmd_buf[m_buf_used] = getc();
+        if(m_cmd_buf[m_buf_used] == 3)   // STX: Start of Text
+            continue;
+        if(m_cmd_buf[m_buf_used] == 4)   // ETX: End of Text
+        {   
+            break;
+        }
+        if(m_cmd_buf[m_buf_used] == 8 || m_buf_used == (SCHEDULER_BUFSIZE - 1)) // BS: Backspace
+        {
+            if(m_buf_used != 0)
+            {
+                m_buf_used--;
+                m_cmd_buf[m_buf_used] = '\0';
+                putc('\b');
+                putc(' ');
+                putc('\b');
+            }
+        }
+        else if(m_cmd_buf[m_buf_used] == 27)     // Cursor Operations([[A, [[B, [[C, [[D)
+        {
+            getc(); // Dummy byte
+            m_cmd_buf[m_buf_used] = getc();
+            /* TODO History Operations */
+        }
+        else
+        {
+            putc(m_cmd_buf[m_buf_used]);
+            m_buf_used++;
+        }
+        
+        if((m_buf_used != 0) && (m_cmd_buf[m_buf_used - 1] == '\r' | m_cmd_buf[m_buf_used - 1] == '\n'))
+        {
+            printf("\r\n");
+            // Command Parsing and Execution 
+            switch(scheduler(m_cmd_buf))
+            {
+                case -1:
+                    break;
+                case -2:
+                    if(SCHEDULER_CLI)
+                        printf("Error: %s not found.\r\n", m_cmd_buf);
+                    break;
+                default:
+                    break;
+            }
+            
+            // Reset Command Line Buffer
+            for(size_t i = 0; i!= SCHEDULER_BUFSIZE; i++)
+                m_cmd_buf[i] = '\0';
+            m_buf_used = 0;
+            
+            // if(RPC_ACK)
+            // putc(0x04);
+            
+            // After Executing Command.
             if(SCHEDULER_CLI)
-                printf("[SerialCLI] Empty Command.\r\n");
-            break;
-        case -2:
-            if(SCHEDULER_CLI)
-                printf("[SerialCLI] Command not found.\r\n");
-            break;
-        default:
-            break;
+                printf("cli@stm32f429zi $ ");
+        }   
     }
-    
-    // After Executing Command.
-    if(SCHEDULER_CLI)
-        printf("serialcli >");
+    m_led = 0;
 }
 
 int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
@@ -76,7 +128,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
     {
         // Registered Command
         if(SCHEDULER_CLI)
-            printf("[Error] Command %s already registered.\r\n",cmd_name);
+            printf("Error: %s already registered.\r\n",cmd_name);
         return -1;
     }   
     // Using Public Overflow Table
@@ -86,7 +138,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
         if(m_overflow_used == OVERFLOW_TABLE_SIZE)
         {
             if(SCHEDULER_CLI)
-                printf("[Error] Hash/Overflow Table got no space for this command.\r\n");
+                printf("Error: Hash/Overflow Table got no space for this command.\r\n");
             return -1;
         }
         
@@ -96,7 +148,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
             if(!strcmp(cmd_name, m_overflow_table[i].node_name))
             {
                 if(SCHEDULER_CLI)
-                    printf("[Error] Command %s already registered.\r\n", cmd_name);
+                    printf("Error: Command %s already registered.\r\n", cmd_name);
                 return -1;
             }
         }
@@ -123,7 +175,7 @@ int SerialCLI::scheduler(char* cmd_buf)
     for(size_t i = 0; i != SCHEDULER_BUFSIZE; i++)
     {
         /* Exit if end reached or argument number too large */
-        if(cmd_buf[i] == '\0' || cmd_buf[i] == '\n' || cmd_buf[i] == '\r')
+        if((cmd_buf[i] == '\0') | (cmd_buf[i] == '\n') | (cmd_buf[i] == '\r'))
         {
             cmd_buf[i] = '\0';
             break;
@@ -184,7 +236,7 @@ int SerialCLI::simplehash(char* const cmd_name)
 
 int SerialCLI::display_functions(void)
 {
-    puts("\r\nSerialCLI - Memory Layout\r\n");
+    puts("SerialCLI - Memory Layout\r\n");
     // Main Hash Table
     puts("[Main Hash Table]\r\n----------------\r\n");
     size_t count = 0;
