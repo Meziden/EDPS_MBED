@@ -5,14 +5,14 @@
 **警告: 某些重载构造函数的预设针脚名(PinName)只能用于NXP LPC1768开发板，如果您使用不同的硬件平台，请在创建对象时使用正确的PinName，否则可能导致硬件损坏。** 
 
 ### 现已支持：
-**SerialCLI / 命令解释器2.2**
-- 该解释器将串口输入分解为参数数量argc与参数列表argv\*\*传入您绑定的函数，使用UART接收中断实现异步逻辑。
+**SerialCLI / 命令解释器3.0**
+- 内置哈希-溢出表，时间复杂度O(1)的函数匹配，支持int (\*)(int, char**)型回调函数。
 - 使用示例见examples/main_SerialCLI.cpp
-- 注意：跳转至绑定的函数时，由于目前中断无法正确重复触发，内置XON/XOFF流控也不被大多数软件支持，请将绑定的函数尽量精简，指令发送间亦增加数毫秒等待时间以免发送失败。
-- （正在进行）Minicom VT100/VT102 支持
+- 注意：跳转至绑定的函数时，由于目前中断无法正确重复触发，XON/XOFF流控软件支持不良，请将绑定的函数尽量精简，指令发送间亦增加数毫秒等待时间或增加应答机制（ACK）以免发送失败。
+- 新增适用于Minicom/ZOC的终端支持（ANSI/VT102）。
 
 **PID / 单路PID控制器**
-- 将宁（您）的float geterror(void)函数与void setctl(float signal_ctl)函数在该控制器初始化时传入，即可进行PID控制。
+- 将float geterror(void)函数与void setctl(float signal_ctl)函数在该控制器初始化时传入，即可进行PID控制。
 - 示例：`PID myPIDController(geterror, setctl)`
 
 **max7219 / MAX7219 8x8点阵LED驱动器**
