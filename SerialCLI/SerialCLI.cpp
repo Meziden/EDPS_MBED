@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "SerialCLI.h"
 
-SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : Serial(pin_tx, pin_rx, baudrate), m_led(LED2)
+SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : RawSerial(pin_tx, pin_rx, baudrate), m_led(LED2)
 {
     // Function Table Initialization
     for(size_t i = 0; i != FUNCTION_TABLE_SIZE; i++)
