@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "imujy61.h"
 
-imujy61::imujy61(PinName tx_pin, PinName rx_pin) : Serial(tx_pin,rx_pin)
+imujy61::imujy61(PinName tx_pin, PinName rx_pin) : RawSerial(tx_pin,rx_pin)
 {
     //setting up format
     baud(115200);
