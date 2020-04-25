@@ -5,7 +5,7 @@ const size_t AXIS_X = 0;
 const size_t AXIS_Y = 1;
 const size_t AXIS_Z = 2;
 
-class imujy61 : public Serial
+class imujy61 : public RawSerial
 {
     public:
     imujy61(PinName tx_pin, PinName rx_pin);
