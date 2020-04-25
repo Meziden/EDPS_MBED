@@ -38,7 +38,7 @@ typedef struct
 serialcli_node_t;
 
 // Class Definition
-class SerialCLI : public Serial
+class SerialCLI : public RawSerial
 {
     public:
         // Constructor, setting up pins and baudrate
