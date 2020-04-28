@@ -1,12 +1,9 @@
 /* 
  * SerialCLI: CLI Command Interpreter for Serial Ports
  * 
- * CHANGELOG v3.0:
- * + ANSI/VT102 Terminal Support
- * + Command Memory Layout Display
- * + OOP API.
- * + Faster and More General Command Parsing.
- * + Command Function Hashtable: Faster Function Matching.
+ * CHANGELOG v3.1:
+ * + ANSI/VT102 Interactive Terminal Support
+ * + Performance Optimization
  */
 
 #ifndef SERIALCLI_H
@@ -22,9 +19,9 @@ const int FUNCTION_TABLE_SIZE = 32;
 const int OVERFLOW_TABLE_SIZE = 16;
 
 // Command Interpreter Parameters
-const int MAX_ARGUMENT = 10;
-const int SCHEDULER_BUFSIZE = 64;  // 64bytes
-const bool SCHEDULER_CLI = 1;      // Disable when acting as duplex RPC framework.
+const int CMD_MAX_ARGUMENT = 10;
+const int CMD_LINE_BUFSIZE = 64;  // 64bytes
+const bool ENABLE_INTERACTIVE = 0;      // Disable when acting as duplex RPC framework.
 
 // SerialCLI Function Typedef
 typedef int (*serialcli_fp_t)(int, char**);
@@ -45,7 +42,7 @@ class SerialCLI : public RawSerial
         SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate = 115200);
         
         // Add Functions
-        int add_function(char* cmd_name, serialcli_fp_t cmd_fp);
+        int add_function(const char* cmd_name, serialcli_fp_t cmd_fp);
         
         // Display Layout
         int display_functions(void);
@@ -58,7 +55,7 @@ class SerialCLI : public RawSerial
         void rxirq_clb();
         
         // Function - Name Bidings, use hash() + strcmp() for higher efficiency.
-        int simplehash(char* const cmd_name);
+        int simplehash(const char* cmd_name);
         
         // Function Pointer Table
         serialcli_node_t m_function_table[FUNCTION_TABLE_SIZE];
@@ -68,7 +65,7 @@ class SerialCLI : public RawSerial
         int m_overflow_used;
         
         // Command Line Buffer
-        char m_cmd_buf[SCHEDULER_BUFSIZE];
+        char m_cmd_buf[CMD_LINE_BUFSIZE];
         int m_buf_used;
         
         // Indicator
