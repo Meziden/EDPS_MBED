@@ -2,11 +2,13 @@
 
 ### 一些mbed类库, 现已支持：
   
-**SerialCLI / ANSI终端-命令行界面 3.0**
+**SerialCLI / 串行接口指令解释器 3.1**
 - 内置哈希-溢出表，时间复杂度O(1)的函数匹配，支持int (\*)(int, char**)型回调函数。
+- 可选交互式界面，支持ZOC/minicom等串口工具，支持常规串口调试器。
 - 使用示例见examples/main_SerialCLI.cpp
-- \[正在进行\]：指令历史与VT102光标操作支持。
-- \[已修复\]: mbed OS 5上SerialCLI::rxirq_clb()与Serial::attach()不兼容。
+
+**SerialTerm / 串行接口指令解释器+ANSI终端支持 3.1**
+- 为SerialCLI新增具有ANSI终端特性支持的交互式命令行界面, 支持ZOC/minicom等串口工具，不支持常规串口调试器。
 
 **PID / 单路PID控制器**
 - 将float geterror(void)函数与void setctl(float signal_ctl)函数在该控制器初始化时传入，即可进行PID控制。
