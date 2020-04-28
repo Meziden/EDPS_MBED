@@ -20,22 +20,26 @@ SerialCLI::SerialCLI(PinName pin_tx, PinName pin_rx, int baudrate) : RawSerial(p
     m_overflow_used = 0;
     
     // Command Line Buffer
-    for(size_t i = 0; i!= SCHEDULER_BUFSIZE; i++)
+    for(size_t i = 0; i!= CMD_LINE_BUFSIZE; i++)
         m_cmd_buf[i] = '\0';
     m_buf_used = 0;
     
     attach(callback(this, &SerialCLI::rxirq_clb), Serial::RxIrq);
     
-    if(SCHEDULER_CLI)
+    if(ENABLE_INTERACTIVE)
     {
-        printf("\033[2J");      // Clear
+        puts("SerialTerm v3.1 on ST NUCLEO-H743ZI\r\n--------------------\r\n");
+        puts("Configuration:\r\n");
         
-        printf("SerialCLI v3.0\r\n--------------------\r\n");
-        printf("Configuration:\r\n");
-        printf("  - Buffer Length: %d\r\n  - Max Argument: %d\r\n", SCHEDULER_BUFSIZE, MAX_ARGUMENT);
+        printf("  - Buffer Length: %d\r\n  - Max Argument: %d\r\n", CMD_LINE_BUFSIZE, CMD_MAX_ARGUMENT);
         printf("  - Hash Table: %d\r\n  - Overflow Table: %d\r\n", FUNCTION_TABLE_SIZE, OVERFLOW_TABLE_SIZE);
-        printf("--------------------\r\n");
-        printf("cli@stm32f429zi $ ");
+
+        puts("Memory Usage:\r\n");
+
+        printf("  - Function Table: %d Bytes\r\n",(OVERFLOW_TABLE_SIZE + FUNCTION_TABLE_SIZE) * sizeof(serialcli_node_t));
+        printf("  - Line Buffer: %d + %d Bytes\r\n", CMD_LINE_BUFSIZE, CMD_MAX_ARGUMENT * 4);
+        puts("--------------------\r\n");
+        printf("cli@stm32h743zi $ ");
     }
 }
 
@@ -46,45 +50,58 @@ void SerialCLI::rxirq_clb()
     while(readable())
     {
         m_cmd_buf[m_buf_used] = getc();
-        if(m_cmd_buf[m_buf_used] == 3)   // STX: Start of Text
-            continue;
-        if(m_cmd_buf[m_buf_used] == 4)   // ETX: End of Text
-        {   
-            break;
-        }
-        if(m_cmd_buf[m_buf_used] == 8 || m_buf_used == (SCHEDULER_BUFSIZE - 1)) // BS: Backspace
+        if(ENABLE_INTERACTIVE)
         {
-            if(m_buf_used != 0)
-            {
-                m_buf_used--;
-                m_cmd_buf[m_buf_used] = '\0';
-                putc('\b');
-                putc(' ');
-                putc('\b');
+            if(m_cmd_buf[m_buf_used] == 3)   // STX: Start of Text
+                continue;
+            if(m_cmd_buf[m_buf_used] == 4)   // ETX: End of Text
+            {   
+                break;
             }
-        }
-        else if(m_cmd_buf[m_buf_used] == 27)     // Cursor Operations([[A, [[B, [[C, [[D)
-        {
-            getc(); // Dummy byte
-            m_cmd_buf[m_buf_used] = getc();
-            /* TODO History Operations */
+            if(m_cmd_buf[m_buf_used] == 8 || m_buf_used == (CMD_LINE_BUFSIZE - 1)) // BS: Backspace
+            {
+                if(m_buf_used != 0)
+                {
+                    m_buf_used--;
+                    m_cmd_buf[m_buf_used] = '\0';
+                    putc('\b');
+                    putc(' ');
+                    putc('\b');
+                }
+            }
+            else if(m_cmd_buf[m_buf_used] == 27)     // Cursor Operations([[A, [[B, [[C, [[D)
+            {
+                getc(); // Dummy byte
+                getc(); // A,B,C,D Ignored.
+            }
+            else
+            {
+                putc(m_cmd_buf[m_buf_used]);
+                m_buf_used++;
+            }
         }
         else
         {
-            putc(m_cmd_buf[m_buf_used]);
-            m_buf_used++;
+            if(m_buf_used == (CMD_LINE_BUFSIZE - 1)) // Full
+            {
+                m_buf_used--;
+                m_cmd_buf[m_buf_used] = '\0';
+            }
+            else
+                m_buf_used++;
         }
         
         if((m_buf_used != 0) && (m_cmd_buf[m_buf_used - 1] == '\r' | m_cmd_buf[m_buf_used - 1] == '\n'))
         {
-            printf("\r\n");
+            if(ENABLE_INTERACTIVE)
+                printf("\r\n");
             // Command Parsing and Execution 
             switch(scheduler(m_cmd_buf))
             {
                 case -1:
                     break;
                 case -2:
-                    if(SCHEDULER_CLI)
+                    if(ENABLE_INTERACTIVE)
                         printf("Error: %s not found.\r\n", m_cmd_buf);
                     break;
                 default:
@@ -92,7 +109,7 @@ void SerialCLI::rxirq_clb()
             }
             
             // Reset Command Line Buffer
-            for(size_t i = 0; i!= SCHEDULER_BUFSIZE; i++)
+            for(size_t i = 0; i!= CMD_LINE_BUFSIZE; i++)
                 m_cmd_buf[i] = '\0';
             m_buf_used = 0;
             
@@ -100,18 +117,18 @@ void SerialCLI::rxirq_clb()
             // putc(0x04);
             
             // After Executing Command.
-            if(SCHEDULER_CLI)
-                printf("cli@stm32f429zi $ ");
+            if(ENABLE_INTERACTIVE)
+                printf("cli@stm32h743zi $ ");
         }   
     }
     m_led = 0;
 }
 
-int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
+int SerialCLI::add_function(const char* cmd_name, serialcli_fp_t cmd_fp)
 {
     if(cmd_fp == NULL || cmd_name[0] == '\0' )
     {
-        if(SCHEDULER_CLI)
+        if(ENABLE_INTERACTIVE)
             printf("Error: The command or function is empty.\r\n");
         return 0;
     }
@@ -127,7 +144,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
     else if(!strcmp(cmd_name, m_function_table[simplehash(cmd_name)].node_name))
     {
         // Registered Command
-        if(SCHEDULER_CLI)
+        if(ENABLE_INTERACTIVE)
             printf("Error: %s already registered.\r\n",cmd_name);
         return -1;
     }   
@@ -137,7 +154,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
         // Check if the overflow table is full
         if(m_overflow_used == OVERFLOW_TABLE_SIZE)
         {
-            if(SCHEDULER_CLI)
+            if(ENABLE_INTERACTIVE)
                 printf("Error: Hash/Overflow Table got no space for this command.\r\n");
             return -1;
         }
@@ -147,7 +164,7 @@ int SerialCLI::add_function(char* cmd_name, serialcli_fp_t cmd_fp)
         {
             if(!strcmp(cmd_name, m_overflow_table[i].node_name))
             {
-                if(SCHEDULER_CLI)
+                if(ENABLE_INTERACTIVE)
                     printf("Error: Command %s already registered.\r\n", cmd_name);
                 return -1;
             }
@@ -168,11 +185,11 @@ int SerialCLI::scheduler(char* cmd_buf)
     /* Parsing input string. */
     int cmd_argc = 1;
     /* ARGV is only a pointer set for CMDBUF, not real buffers */
-    char* cmd_argv[MAX_ARGUMENT] = {cmd_buf};
+    char* cmd_argv[CMD_MAX_ARGUMENT] = {cmd_buf};
     
     int space_flag = 0;
     /* Exit if reach the end of buffer */
-    for(size_t i = 0; i != SCHEDULER_BUFSIZE; i++)
+    for(size_t i = 0; i != CMD_LINE_BUFSIZE; i++)
     {
         /* Exit if end reached or argument number too large */
         if((cmd_buf[i] == '\0') | (cmd_buf[i] == '\n') | (cmd_buf[i] == '\r'))
@@ -181,7 +198,7 @@ int SerialCLI::scheduler(char* cmd_buf)
             break;
         }
         
-        if(cmd_argc == MAX_ARGUMENT)
+        if(cmd_argc == CMD_MAX_ARGUMENT)
             break;
         
         if(cmd_buf[i] == ' ')
@@ -224,12 +241,11 @@ int SerialCLI::scheduler(char* cmd_buf)
     return -2;
 }
 
-int SerialCLI::simplehash(char* const cmd_name)
+int SerialCLI::simplehash(const char* cmd_name)
 {
     int sum = 0;   // The return value should be 0 when processing empty strings.
-    char* cmd_name_tmp = cmd_name;
-    for(; (*cmd_name_tmp); cmd_name_tmp++)
-        sum += (uint8_t)cmd_name_tmp[0];
+    for(; (*cmd_name); cmd_name++)
+        sum += (uint8_t)cmd_name[0];
     // Ensure the return address is in proper range.
     return (sum % FUNCTION_TABLE_SIZE);
 }
